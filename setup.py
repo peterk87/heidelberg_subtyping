@@ -31,6 +31,8 @@ setup(
     description=program_summary,
     classifiers=classifiers,
     include_package_data=True,
+    package_dir={'heidelberg_subtyping': 'heidelberg_subtyping'},
+    package_data={'heidelberg_subtyping': ['data/tiles.fasta',]},
     install_requires=[
         'numpy>=1.12.1',
         'pandas>=0.20.1',
