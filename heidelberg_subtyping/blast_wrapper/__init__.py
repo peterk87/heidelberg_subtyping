@@ -18,12 +18,18 @@ class BlastRunner:
     fasta_path = attr.ib()
     tmp_work_dir = attr.ib(default='/tmp', validator=attr.validators.instance_of(str))
     blast_db_created = attr.ib(default=False, validator=attr.validators.instance_of(bool))
+    makeblastdb_exc = attr.ib(default='makeblastdb', validator=attr.validators.instance_of(str))
     blastn_exc = attr.ib(default='blastn', validator=attr.validators.instance_of(str))
+
+    @makeblastdb_exc.validator
+    def _check_makeblastdb_exists(self, attribute, value):
+        if not exc_exists(value):
+            raise OSError('makeblastdb executable "{}" does not exist in the user $PATH'.format(value))
 
     @blastn_exc.validator
     def _check_blastn_exists(self, attribute, value):
         if not exc_exists(value):
-            raise OSError('{} does not exist in the user $PATH'.format(value))
+            raise OSError('blast executable "{}" does not exist in the user $PATH'.format(value))
 
     @fasta_path.validator
     def _fasta_path_exists(self, attribute, value):
@@ -67,7 +73,7 @@ class BlastRunner:
         if os.path.exists(nin_filepath):
             self.blast_db_created = True
             return self.tmp_fasta_path
-        cmdlist = ['makeblastdb',
+        cmdlist = [self.makeblastdb_exc,
                    '-in', '{}'.format(self.tmp_fasta_path),
                    '-dbtype', 'nucl']
         exit_code, stdout, stderr = run_command(cmdlist)
@@ -97,7 +103,7 @@ class BlastRunner:
         outfile = os.path.join(self.tmp_work_dir, '{}-{}-{}.blast'.format(query_filename,
                                                                           db_filename,
                                                                           timestamp))
-        cmd_list = ['blastn',
+        cmd_list = [self.blastn_exc,
                     '-task', blast_task,
                     '-query', query_fasta_path,
                     '-db', '{}'.format(self.tmp_fasta_path),

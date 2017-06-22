@@ -58,3 +58,35 @@ def genome_name_from_fasta_path(fasta_path):
     """
     filename = os.path.basename(fasta_path)
     return re.sub(r'(\.fa$)|(\.fas$)|(\.fasta$)|(\.fna$)|(\.\w{1,}$)', '', filename)
+
+
+def compare_subtypes(a, b):
+    for x, y in zip(a, b):
+        if x != y:
+            return False
+    return True
+
+
+def find_inconsistent_subtypes(subtypes):
+    from collections import Counter
+    incon = []
+    for i in range(len(subtypes) - 1):
+        a = subtypes[i]
+        for j in range(i + 1, len(subtypes)):
+            b = subtypes[j]
+            is_consistent = compare_subtypes(a, b)
+            if not is_consistent:
+                incon.append((a, b))
+    l = []
+    for a, b in incon:
+        astr = '.'.join([str(x) for x in a])
+        bstr = '.'.join([str(x) for x in b])
+        l += [astr, bstr]
+    c = Counter(l)
+    incon_subtypes = []
+    for subtype, freq in c.most_common():
+        if freq > 1:
+            incon_subtypes.append(subtype)
+        else:
+            break
+    return incon_subtypes

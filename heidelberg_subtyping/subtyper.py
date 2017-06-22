@@ -1,15 +1,16 @@
 # -*- coding: utf-8 -*-
-import os
 
+import os
+import re
 import attr
 import logging
-
-from _datetime import datetime
-
-import re
+from datetime import datetime
 from pkg_resources import resource_filename
 
 from . import program_name
+from .subtype import Subtype
+from .utils import find_inconsistent_subtypes
+from .kmer_count import Jellyfisher
 from .blast_wrapper import BlastRunner, BlastReader
 
 TILES_FASTA = resource_filename('heidelberg_subtyping', 'data/tiles.fasta')
@@ -25,50 +26,6 @@ n_tiles_matching_all
 n_tiles_matching_positive
 n_tiles_matching_subtype
 file_path""".strip().split('\n')
-
-@attr.s
-class Subtype(object):
-    sample = attr.ib(validator=attr.validators.instance_of(str))
-    file_path = attr.ib(validator=attr.validators.instance_of(str))
-    subtype = attr.ib(default=None, validator=attr.validators.optional(attr.validators.instance_of(str)))
-    all_subtypes = attr.ib(default=None, validator=attr.validators.optional(attr.validators.instance_of(str)))
-    inconsistent_subtypes = attr.ib(default=None, validator=attr.validators.optional(attr.validators.instance_of(str)))
-    tiles_matching_subtype = attr.ib(default=None, validator=attr.validators.optional(attr.validators.instance_of(str)))
-    are_subtypes_consistent = attr.ib(default=True, validator=attr.validators.instance_of(bool))
-    n_tiles_matching_all = attr.ib(default=0, validator=attr.validators.instance_of(int))
-    n_tiles_matching_positive = attr.ib(default=0, validator=attr.validators.instance_of(int))
-    n_tiles_matching_subtype = attr.ib(default=0, validator=attr.validators.instance_of(int))
-
-
-def compare_subtypes(a, b):
-    for x, y in zip(a, b):
-        if x != y:
-            return False
-    return True
-
-def find_inconsistent_subtypes(subtypes):
-    from collections import Counter
-    incon = []
-    for i in range(len(subtypes) - 1):
-        a = subtypes[i]
-        for j in range(i + 1, len(subtypes)):
-            b = subtypes[j]
-            is_consistent = compare_subtypes(a, b)
-            if not is_consistent:
-                incon.append((a, b))
-    l = []
-    for a,b in incon:
-        astr = '.'.join([str(x) for x in a])
-        bstr = '.'.join([str(x) for x in b])
-        l += [astr, bstr]
-    c = Counter(l)
-    incon_subtypes = []
-    for subtype,freq in c.most_common():
-        if freq > 1:
-            incon_subtypes.append(subtype)
-        else:
-            break
-    return incon_subtypes
 
 
 def subtype_fasta(fasta_path, genome_name, tmp_dir='/tmp'):
@@ -86,7 +43,9 @@ def subtype_fasta(fasta_path, genome_name, tmp_dir='/tmp'):
         st.are_subtypes_consistent = False
         return st, None
 
-    df.rename(columns={'qseqid':'tilename'}, inplace=True)
+    df.rename(columns={'qseqid':'tilename',
+                       'sseq':'seq'},
+              inplace=True)
 
     refpositions = [x for x, y in df.tilename.str.split('-')]
     subtypes = [y for x, y in df.tilename.str.split('-')]
@@ -124,3 +83,17 @@ def subtype_fasta(fasta_path, genome_name, tmp_dir='/tmp'):
     df['sample'] = genome_name
     df['file_path'] = fasta_path
     return st, df
+
+
+def subtype_reads(reads, genome_name, tmp_dir='/tmp', threads=1, min_kmer_freq=10, max_kmer_freq=200):
+    dtnow = datetime.now()
+    genome_name_no_spaces = re.sub(r'\W', '_', genome_name)
+    genome_tmp_dir = os.path.join(tmp_dir,
+                                  dtnow.strftime("%Y%m%d%H%M%S") + '-' + program_name + '-' + genome_name_no_spaces)
+    jfer = Jellyfisher(genome_name=genome_name,
+                       reads=reads,
+                       min_kmer_freq=min_kmer_freq,
+                       max_kmer_freq=max_kmer_freq,
+                       tmp_dir=genome_tmp_dir,
+                       threads=threads)
+    return jfer.summary()
