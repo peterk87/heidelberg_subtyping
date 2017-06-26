@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+import shutil
 
 import attr
 import os
@@ -10,6 +11,7 @@ from ..utils import exc_exists, run_command, find_inconsistent_subtypes
 from ..blast_wrapper.helpers import parse_fasta, revcomp
 from ..subtype import Subtype
 
+
 @attr.s
 class Jellyfisher(object):
     genome_name = attr.ib()
@@ -18,7 +20,8 @@ class Jellyfisher(object):
     max_kmer_freq = attr.ib(default=200, validator=attr.validators.instance_of(int))
     tmp_dir = attr.ib(default='/tmp', validator=attr.validators.instance_of(str))
     threads = attr.ib(default=1, validator=attr.validators.instance_of(int))
-    kmer_fasta = attr.ib(default=resource_filename('heidelberg_subtyping', 'data/tiles.fasta'), validator=attr.validators.instance_of(str))
+    kmer_fasta = attr.ib(default=resource_filename('heidelberg_subtyping', 'data/tiles.fasta'),
+                         validator=attr.validators.instance_of(str))
     jellyfish_exc = attr.ib(default='jellyfish', validator=attr.validators.instance_of(str))
     jf_file = attr.ib(default=None)
     jf_query_tiles_file = attr.ib(default=None)
@@ -53,13 +56,15 @@ class Jellyfisher(object):
         elif isinstance(value, list):
             for x in value:
                 if not isinstance(x, str):
-                    raise Exception('Reads file not specified as string or list of string: type={} "{}"'.format(type(x), x))
+                    raise Exception(
+                        'Reads file not specified as string or list of string: type={} "{}"'.format(type(x), x))
                 if not os.path.exists(x):
                     raise FileNotFoundError('Reads file {} does not exist!'.format(x))
                 if not os.path.isfile(x):
                     raise OSError('{} is not a valid reads file'.format(x))
         else:
-            raise Exception('Reads file(s) not specified as string or list of string: type={} "{}"'.format(type(value), value))
+            raise Exception(
+                'Reads file(s) not specified as string or list of string: type={} "{}"'.format(type(value), value))
 
     def _create_tmp_folder(self):
         count = 1
@@ -78,6 +83,9 @@ class Jellyfisher(object):
                 count += 1
         self.tmp_dir = tmp_dir
         return self.tmp_dir
+
+    def cleanup(self):
+        shutil.rmtree(self.tmp_dir)
 
     def kmer_count(self, k=33):
         """Jellyfish k-mer counting of FASTQ reads
@@ -238,3 +246,13 @@ class Jellyfisher(object):
             st.inconsistent_subtypes = inconsistent_subtypes
         logging.info(st)
         return st, df
+
+    def __enter__(self):
+        if self.genome_name is None \
+                or self.reads is None:
+            return self
+        self._create_tmp_folder()
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        self.cleanup()

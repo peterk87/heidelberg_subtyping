@@ -90,10 +90,11 @@ def subtype_reads(reads, genome_name, tmp_dir='/tmp', threads=1, min_kmer_freq=1
     genome_name_no_spaces = re.sub(r'\W', '_', genome_name)
     genome_tmp_dir = os.path.join(tmp_dir,
                                   dtnow.strftime("%Y%m%d%H%M%S") + '-' + program_name + '-' + genome_name_no_spaces)
-    jfer = Jellyfisher(genome_name=genome_name,
+    with Jellyfisher(genome_name=genome_name,
                        reads=reads,
                        min_kmer_freq=min_kmer_freq,
                        max_kmer_freq=max_kmer_freq,
                        tmp_dir=genome_tmp_dir,
-                       threads=threads)
-    return jfer.summary()
+                       threads=threads) as jfer:
+        st, df = jfer.summary()
+        return st, df
