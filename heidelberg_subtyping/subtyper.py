@@ -65,14 +65,14 @@ def subtype_fasta(fasta_path, genome_name, tmp_dir='/tmp'):
     logging.debug('pos_subtypes: %s', pos_subtypes)
     inconsistent_subtypes = find_inconsistent_subtypes(pos_subtypes)
     logging.debug('inconsistent_subtypes: %s', inconsistent_subtypes)
-    st.n_tiles_matching_all = df.shape[0]
-    st.n_tiles_matching_positive = dfpos.shape[0]
-    st.n_tiles_matching_subtype = dfpos_highest_res.shape[0]
+    st.n_tiles_matching_all = df.tilename.unique().size
+    st.n_tiles_matching_positive = dfpos.tilename.unique().size
+    st.n_tiles_matching_subtype = dfpos_highest_res.tilename.unique().size
     pos_subtypes_str = [x for x in dfpos.subtype.unique()]
     pos_subtypes_str.sort(key=lambda x: len(x))
     st.all_subtypes = '; '.join(pos_subtypes_str)
     st.subtype = '; '.join([x for x in dfpos_highest_res.subtype.unique()])
-    st.tiles_matching_subtype = '; '.join([x for x in dfpos_highest_res.tilename])
+    st.tiles_matching_subtype = '; '.join([x for x in dfpos_highest_res.tilename.unique()])
 
     if len(inconsistent_subtypes) > 0:
         st.are_subtypes_consistent = False

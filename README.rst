@@ -2,7 +2,7 @@
 ``heidelberg_subtyping``: Subtype *Salmonella* Heidelberg genomes
 *****************************************************************
 
-Subtype *Salmonella enterica* subsp. enterica serovar Heidelberg genomes using an *in-silico* 33 bp k-mer subtyping method developed by Genevieve Labbe, Roger Johnson, et al from the Public Health Agency of Canada.
+Subtype *Salmonella enterica* subsp. enterica serovar Heidelberg genomes using an *in-silico* 33 bp k-mer subtyping method developed by Genevieve Labbe et al.
 
 Subtype *Salmonella* Heidelberg genome assemblies (FASTA files) and/or whole-genome sequencing reads (FASTQ files)!
 
@@ -13,7 +13,9 @@ If you find this tool useful, please cite as:
 
 .. epigraph::
 
-    [article citation goes here]
+    A robust genotyping scheme for *Salmonella enterica* serovar Heidelberg clones circulating in North America.
+    Geneviève Labbé, James Robertson, Peter Kruczkiewicz, Chad R. Laing, Kim Ziebell, Aleisha R. Reimer, Lorelee Tschetter, Gary Van Domselaar, Sadjia Bekal, Kimberley A. MacDonald, Linda Hoang, Linda Chui, Danielle Daignault, Durda Slavic, Frank Pollari, E. Jane Parmley, Philip Mabon, Elissa Giang, Lok Kan Lee, Jonathan Moffat, Marisa Rankin, Joanne MacKinnon, Roger Johnson, John H.E. Nash.
+    [Manuscript in preparation]
 
 
 Requirements and Dependencies
