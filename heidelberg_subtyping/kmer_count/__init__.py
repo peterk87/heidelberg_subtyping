@@ -7,9 +7,11 @@ from datetime import datetime
 import logging
 import pandas as pd
 from pkg_resources import resource_filename
+
 from ..utils import exc_exists, run_command, find_inconsistent_subtypes
 from ..blast_wrapper.helpers import parse_fasta, revcomp
 from ..subtype import Subtype
+from ..subtype_stats import SUBTYPE_COUNTS
 
 
 @attr.s
@@ -239,7 +241,12 @@ class Jellyfisher(object):
         pos_subtypes_str = [x for x in dfpos.subtype.unique()]
         pos_subtypes_str.sort(key=lambda x: len(x))
         st.all_subtypes = '; '.join(pos_subtypes_str)
-        st.subtype = '; '.join([x for x in dfpos_highest_res.subtype.unique()])
+        subtype_list = [x for x in dfpos_highest_res.subtype.unique()]
+        st.subtype = '; '.join(subtype_list)
+        st.n_tiles_matching_all_total = ';'.join([str(SUBTYPE_COUNTS[x].all_tile_count) for x in subtype_list])
+        st.n_tiles_matching_positive_total = ';'.join(
+            [str(SUBTYPE_COUNTS[x].positive_tile_count) for x in subtype_list])
+        st.n_tiles_matching_subtype_total = ';'.join([str(SUBTYPE_COUNTS[x].subtype_tile_count) for x in subtype_list])
         st.tiles_matching_subtype = '; '.join([x for x in dfpos_highest_res.tilename])
         if len(inconsistent_subtypes) > 0:
             st.are_subtypes_consistent = False

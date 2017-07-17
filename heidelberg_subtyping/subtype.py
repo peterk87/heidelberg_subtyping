@@ -13,3 +13,6 @@ class Subtype(object):
     n_tiles_matching_all = attr.ib(default=0, validator=attr.validators.instance_of(int))
     n_tiles_matching_positive = attr.ib(default=0, validator=attr.validators.instance_of(int))
     n_tiles_matching_subtype = attr.ib(default=0, validator=attr.validators.instance_of(int))
+    n_tiles_matching_all_total = attr.ib(default=0, validator=attr.validators.instance_of(int))
+    n_tiles_matching_positive_total = attr.ib(default=0, validator=attr.validators.instance_of(int))
+    n_tiles_matching_subtype_total = attr.ib(default=0, validator=attr.validators.instance_of(int))

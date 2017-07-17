@@ -1,21 +1,22 @@
 # -*- coding: utf-8 -*-
 
+import logging
 import os
 import re
-import attr
-import logging
 from datetime import datetime
+
 from pkg_resources import resource_filename
 
 from . import program_name
+from .blast_wrapper import BlastRunner, BlastReader
+from .kmer_count import Jellyfisher
 from .subtype import Subtype
 from .utils import find_inconsistent_subtypes
-from .kmer_count import Jellyfisher
-from .blast_wrapper import BlastRunner, BlastReader
+from .subtype_stats import SUBTYPE_COUNTS
 
 TILES_FASTA = resource_filename('heidelberg_subtyping', 'data/tiles.fasta')
 
-SUBTYPE_SUMMARY_COLS ="""
+SUBTYPE_SUMMARY_COLS = """
 sample
 subtype
 all_subtypes
@@ -23,15 +24,19 @@ tiles_matching_subtype
 are_subtypes_consistent
 inconsistent_subtypes
 n_tiles_matching_all
+n_tiles_matching_all_total
 n_tiles_matching_positive
+n_tiles_matching_positive_total
 n_tiles_matching_subtype
+n_tiles_matching_subtype_total
 file_path""".strip().split('\n')
 
 
 def subtype_fasta(fasta_path, genome_name, tmp_dir='/tmp'):
     dtnow = datetime.now()
     genome_name_no_spaces = re.sub(r'\W', '_', genome_name)
-    genome_tmp_dir = os.path.join(tmp_dir, dtnow.strftime("%Y%m%d%H%M%S") + '-' + program_name + '-' + genome_name_no_spaces)
+    genome_tmp_dir = os.path.join(tmp_dir,
+                                  dtnow.strftime("%Y%m%d%H%M%S") + '-' + program_name + '-' + genome_name_no_spaces)
     with BlastRunner(fasta_path=fasta_path, tmp_work_dir=genome_tmp_dir) as brunner:
         blast_outfile = brunner.blast_against_query(TILES_FASTA, word_size=33)
         with BlastReader(blast_outfile=blast_outfile) as breader:
@@ -43,8 +48,8 @@ def subtype_fasta(fasta_path, genome_name, tmp_dir='/tmp'):
         st.are_subtypes_consistent = False
         return st, None
 
-    df.rename(columns={'qseqid':'tilename',
-                       'sseq':'seq'},
+    df.rename(columns={'qseqid': 'tilename',
+                       'sseq': 'seq'},
               inplace=True)
 
     refpositions = [x for x, y in df.tilename.str.split('-')]
@@ -71,7 +76,11 @@ def subtype_fasta(fasta_path, genome_name, tmp_dir='/tmp'):
     pos_subtypes_str = [x for x in dfpos.subtype.unique()]
     pos_subtypes_str.sort(key=lambda x: len(x))
     st.all_subtypes = '; '.join(pos_subtypes_str)
-    st.subtype = '; '.join([x for x in dfpos_highest_res.subtype.unique()])
+    subtype_list =[x for x in dfpos_highest_res.subtype.unique()]
+    st.subtype = '; '.join(subtype_list)
+    st.n_tiles_matching_all_total = ';'.join([str(SUBTYPE_COUNTS[x].all_tile_count) for x in subtype_list])
+    st.n_tiles_matching_positive_total = ';'.join([str(SUBTYPE_COUNTS[x].positive_tile_count) for x in subtype_list])
+    st.n_tiles_matching_subtype_total = ';'.join([str(SUBTYPE_COUNTS[x].subtype_tile_count) for x in subtype_list])
     st.tiles_matching_subtype = '; '.join([x for x in dfpos_highest_res.tilename.unique()])
 
     if len(inconsistent_subtypes) > 0:
@@ -91,10 +100,10 @@ def subtype_reads(reads, genome_name, tmp_dir='/tmp', threads=1, min_kmer_freq=1
     genome_tmp_dir = os.path.join(tmp_dir,
                                   dtnow.strftime("%Y%m%d%H%M%S") + '-' + program_name + '-' + genome_name_no_spaces)
     with Jellyfisher(genome_name=genome_name,
-                       reads=reads,
-                       min_kmer_freq=min_kmer_freq,
-                       max_kmer_freq=max_kmer_freq,
-                       tmp_dir=genome_tmp_dir,
-                       threads=threads) as jfer:
+                     reads=reads,
+                     min_kmer_freq=min_kmer_freq,
+                     max_kmer_freq=max_kmer_freq,
+                     tmp_dir=genome_tmp_dir,
+                     threads=threads) as jfer:
         st, df = jfer.summary()
         return st, df
