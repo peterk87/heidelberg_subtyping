@@ -14,8 +14,11 @@ If you find this tool useful, please cite as:
 .. epigraph::
 
     A robust genotyping scheme for *Salmonella enterica* serovar Heidelberg clones circulating in North America.
-    Geneviève Labbé, James Robertson, Peter Kruczkiewicz, Chad R. Laing, Kim Ziebell, Aleisha R. Reimer, Lorelee Tschetter, Gary Van Domselaar, Sadjia Bekal, Kimberley A. MacDonald, Linda Hoang, Linda Chui, Danielle Daignault, Durda Slavic, Frank Pollari, E. Jane Parmley, Philip Mabon, Elissa Giang, Lok Kan Lee, Jonathan Moffat, Marisa Rankin, Joanne MacKinnon, Roger Johnson, John H.E. Nash.
+    Geneviève Labbé [1]_, James Robertson [1]_, Peter Kruczkiewicz, Chad R. Laing, Kim Ziebell, Marisa Rankin, Aleisha R. Reimer, Lorelee Tschetter, Gary Van Domselaar, Eduardo N. Taboada, Sadjia Bekal, Kimberley A. MacDonald, Linda Hoang, Linda Chui, Danielle Daignault, Durda Slavic, Frank  Pollari, E. Jane Parmley, Philip Mabon, Elissa Giang, Lok Kan Lee, Jonathan Moffat, Joanne MacKinnon, Benjamin M. Hetman, Roger Johnson [2]_, John H.E. Nash [2]_. 
     [Manuscript in preparation]
+
+.. [1] These authors contributed equally to the current work
+.. [2] Corresponding authors
 
 
 Requirements and Dependencies
